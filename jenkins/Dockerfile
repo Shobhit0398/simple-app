@@ -11,6 +11,10 @@ RUN apt-get update && apt-get install -y \
     lsb-release \
     && rm -rf /var/lib/apt/lists/*
 
+RUN apt-get update && \
+    apt-get install -y docker.io && \
+    rm -rf /var/lib/apt/lists/*
+
 # Install Docker CLI
 RUN curl -fsSL https://get.docker.com | sh
 

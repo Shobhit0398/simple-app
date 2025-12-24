@@ -2,9 +2,8 @@ FROM jenkins/jenkins:lts
 
 USER root
 
-# Install tools
+# Install required system tools
 RUN apt-get update && apt-get install -y \
-    openjdk-17-jdk \
     curl \
     unzip \
     ca-certificates \
@@ -12,14 +11,14 @@ RUN apt-get update && apt-get install -y \
     lsb-release \
     && rm -rf /var/lib/apt/lists/*
 
-# Docker CLI
+# Install Docker CLI
 RUN curl -fsSL https://get.docker.com | sh
 
-# kubectl
+# Install kubectl
 RUN curl -LO https://dl.k8s.io/release/$(curl -Ls https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl && \
-    chmod +x kubectl && mv kubectl /usr/local/bin/
+    chmod +x kubectl && mv kubectl /usr/local/bin/kubectl
 
-# Sonar Scanner
+# Install Sonar Scanner
 RUN curl -L https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip \
     -o sonar.zip && \
     unzip sonar.zip && \
@@ -27,7 +26,7 @@ RUN curl -L https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sona
     ln -s /opt/sonar-scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner && \
     rm -f sonar.zip
 
-# Docker group access
+# Allow Jenkins user to run docker
 RUN groupadd -g 999 docker || true && \
     usermod -aG docker jenkins
 

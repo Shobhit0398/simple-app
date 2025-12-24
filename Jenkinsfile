@@ -9,17 +9,30 @@ pipeline{
 
     stages {
         
-        stage('Build'){
+        stage('Build') {
+            agent {
+                docker {
+                    image 'node:18-alpine'
+                    args '-u root'
+                }    
+            }
             steps {
                 sh 'npm install'
             }
         }
 
         stage('Unit Test') {
+            agent {
+                docker {
+                    image 'node:18-alpine'
+                    args '-u root'
+                }
+            }
             steps {
                 sh 'npm test'
             }
         }
+
 
         stage('SonarQube Scan') {
             steps {

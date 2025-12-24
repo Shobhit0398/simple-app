@@ -8,12 +8,7 @@ pipeline{
     }
 
     stages {
-        stage('Checkout'){
-            steps {
-                git branch: 'main', url: 'https://github.com/yourrepo/simple-app.git'
-            }
-        }
-
+        
         stage('Build'){
             steps {
                 sh 'npm install'

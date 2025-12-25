@@ -1,7 +1,12 @@
+# Build stage
+FROM node:18-alpine AS build
+WORKDIR /app
+COPY package.json .
+RUN npm install
+COPY . .
+RUN npm run build
+
+# Runtime stage
 FROM nginx:alpine
-
-COPY index.html /usr/share/nginx/html/index.html
-COPY style.css /usr/share/nginx/html/style.css
-COPY app.js /usr/share/nginx/html/app.js
-
+COPY --from=build /app/build /usr/share/nginx/html
 EXPOSE 80

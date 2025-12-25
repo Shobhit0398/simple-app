@@ -14,7 +14,7 @@ spec:
         spec:
             containers:
             - name: myapp
-              image: docker.io/shobhitnagar71/myapp:IMAGE_TAG
+              image: docker.io/shobhitnagar/myapp:IMAGE_TAG
               ports:
               - containerPort: 3001
 

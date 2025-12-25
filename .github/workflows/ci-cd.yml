@@ -1,0 +1,73 @@
+name: CI-CD Pipeline
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+env:
+  IMAGE_NAME: myapp
+  REGISTRY: docker.io
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+
+jobs:
+  build-test-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18
+    
+    - name: Install Dependencies 
+      run: npm install
+
+    - name: Sonarqube Scan
+      uses: sonarsource/sonarqube-scan-action@v2
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+  docker-build-push:
+    needs: build-test-scan
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build Docker Images
+      run: |
+        docker build -t $DOCKERHUB_USERNAME/$IMAGE_NAME:${{ github.sha }} .
+
+    - name: Push Docker Image
+      run: |
+        docker push $DOCKERHUB_USERNAME/$IMAGE_NAME:${{ github.sha }}
+
+  deploy-k8s:
+    needs: docker-build-push
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Set kubeconfig
+      run: |
+        mkdir -p ~/.kube
+        echo "${{ secrets.KUBECONFIG }}" | base64 -d > ~/.kube/config
+    - name: Update image tag
+      run: |
+        sed -i "s|IMAGE_TAG|${{ github.sha }}|g" k8s-deployment.yaml"
+    - name: Deploy to Kubernetes
+      run: |
+        kubectl apply -f k8s-deployment.yaml

@@ -1,0 +1,23 @@
+.row {
+    padding: 20px 50px;
+  }
+  
+  .row-posters {
+    display: flex;
+    overflow-x: scroll;
+    gap: 10px;
+  }
+  
+  .row-posters::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .poster {
+    max-height: 200px;
+    transition: transform 0.2s;
+  }
+  
+  .poster:hover {
+    transform: scale(1.08);
+  }
+  

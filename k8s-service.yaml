@@ -1,12 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: myapp-service
+  name: streamflix-service
 spec:
   type: LoadBalancer
   selector:
-    app: myapp
+    app: streamflix
   ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 3001
+    - port: 80
+      targetPort: 80

@@ -28,6 +28,11 @@ jobs:
 
     - name: Sonarqube Scan
       uses: sonarsource/sonarqube-scan-action@v2
+      with:
+        args: >
+          -Dsonar.projectKey=simple-app
+          -Dsonar.projectName=simple-app
+          -Dsonar.sources=.
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}

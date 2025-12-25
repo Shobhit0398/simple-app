@@ -30,7 +30,7 @@ RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm
 RUN curl -fsSL https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv2.zip && \
     unzip awscliv2.zip && \
     ./aws/install && \
-    rm -rf aws awscliv2.zip
+    rm -rf aws awscliv2.zip && \
 
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*

@@ -1,36 +1,35 @@
-FROM jenkins/jenkins:lts
+# STAGE 1: Build/Download tools (Optional if you just need standard binaries)
+# Using Alpine or Slim images as a base is the #1 way to reduce size.
+FROM jenkins/jenkins:lts-slim AS base
 
 USER root
 
-# Install required system tools
-RUN apt-get update && apt-get install -y \
+# 1. Use 'slim' versions of OS packages and clean up after installation
+# 'rm -rf /var/lib/apt/lists/*' removes the local repository of retrieved package files.
+RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
+    git \
     unzip \
-    ca-certificates \
-    gnupg \
-    lsb-release \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# 2. Install Docker CLI only (if you are using Docker-out-of-Docker)
+# Instead of installing the full Docker engine, just grab the binary.
+RUN curl -fsSL https://download.docker.com/linux/static/stable/x86_64/docker-24.0.5.tgz | tar zxvf - --strip 1 -C /usr/bin docker/docker
+
+# 3. Use Multi-Stage concepts for Node/Java
+# If you need NodeJS, don't use 'apt install'. Use a specific version 
+# or copy it from the official node image.
+COPY --from=node:18-slim /usr/local/bin/node /usr/local/bin/
+COPY --from=node:18-slim /usr/local/lib/node_modules /usr/local/lib/node_modules
+RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm
+
+# 4. Minimize layers
+# Every RUN, COPY, ADD instruction adds a layer. Combine them with '&&'.
 RUN apt-get update && \
-    apt-get install -y docker.io && \
+    apt-get install -y --no-install-recommends python3-pip && \
+    pip3 install --no-cache-dir awscli && \
+    apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-
-
-
-# Install kubectl
-RUN curl -LO https://dl.k8s.io/release/$(curl -Ls https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl && \
-    chmod +x kubectl && mv kubectl /usr/local/bin/kubectl
-
-# Install Sonar Scanner
-RUN curl -L https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip \
-    -o sonar.zip && \
-    unzip sonar.zip && \
-    mv sonar-scanner-* /opt/sonar-scanner && \
-    ln -s /opt/sonar-scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner && \
-    rm -f sonar.zip
-
-# Allow Jenkins user to run docker
-RUN groupadd -g 999 docker || true && \
-    usermod -aG docker jenkins
 
 USER jenkins
